@@ -68,6 +68,40 @@ One challenge with Get-NetTCPConnection is that, while it can reveal the process
 Get-NetTCPConnection | Select-Object local*,remote*,state,@{Name='Process';Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} | Format-Table
 ```
 
+#### Identifying Suspicious Network Activity
+- Abnormal for the associated process
+    - Notepad making connections to port 80
+    - Service making multiple outbound connections (Could be an updater)
+- Abnormal for the environment
+    - Lots of activity during off hours
+    - Long running HTTP/HTPPS sessions
+    - Beaconing
+- Technique specific
+    - Lateral movement implies connections to other internal hosts
+- Known malicious hosts/addresses
+    - Based on threat intelligence
+    - From the incident or other process/connections (i.e. pivoting)
+
+##### Examining Services
+```powershell
+Get-Service
+```
+
+```
+Get-CimInstance -ClassName Win32_Service | Format-List Name,Caption,Description,PathName
+```
+
+#### Registry Interrogation
+- 'Get-ChildItem': Like navigating a file system, we can examine the registry keys using with HKLM: or HKCU: prefix
+- 'Get-ItemProperty': For a given registry key, examine the values
+```powershell
+Get-ChildItem 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\' | Select-Object PSChildName
+
+Get-ItemProperty 'HKLM:Software\Microsoft\Windows\CurrentVersion\Run'
+```
+
+To navigate registry keys, we can use Get-ChildItem with a registry key path to list key contents (or use the PowerShell alias dir) or change to the registry location using Set-Location (or the alias cd) and use Get-Child-Item from the working registry key location.
+
 
 
 
