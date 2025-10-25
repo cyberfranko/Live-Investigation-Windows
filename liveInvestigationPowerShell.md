@@ -102,27 +102,54 @@ Get-ItemProperty 'HKLM:Software\Microsoft\Windows\CurrentVersion\Run'
 
 To navigate registry keys, we can use Get-ChildItem with a registry key path to list key contents (or use the PowerShell alias dir) or change to the registry location using Set-Location (or the alias cd) and use Get-Child-Item from the working registry key location.
 
+#### Unusual Accounts
 
+Look for new, unexpected accounts in the adnimistrators group
+```powershell
+Get-LocalUser
 
+Get-LocalUser | Where-Object ( 0_.Enabled -eq $True )
+Get-LocalGroup
 
+Get-LocalGroupMember Administrators
+```
 
+#### Unusual Scheduled Tasks
+- Look for unusual scheduled tasks: Get-ScheduledTask
+- Export scheduled task for command details: Export-ScheduledTask
+- Examine last run status: Get-ScheduledTaskInfo
 
+```powhershell
+Get-ScheduledTask *Avast* | Select-Object -Property TaskName
 
+Export-ScheduledTask -TaskName 'AvastUpdate'
 
+Get-ScheduledTaskInfo -TaskName 'AvastUpdatre' | Select-Object LastRunTime
+```
 
+##### Unusual Log Entries
+```powershell
+$start = Get-Date 3/1/2022;
+$end = Get-Date 3/31/2022;
+Get-WinEvent -FilterHashTable @{LogName='Security'; StartTime=$start; EndTime=$end;}
 
+Get-WinEvent -LogName System | Where-Object -Property Id -EQ 7045 | Format-List -Property TimeCreated,Message
 
+Get-WinEvent -ListLog | Select LogName,RecordCount
+```
 
+#### Differential Analysis
+```powershell
+Get-Service > baseline-services-20220325.txt
 
+Get-Service > services-liveinvestigation.txt
 
+$baseline = Get-Content .\baseline-services-20220325.txt
 
+$current = Get-Content .\services-liveinvestigation.txt
 
+Compare-Object -ReferenceObject $baseline -DifferenceObject $current
+```
 
-
-
-
-
-
-
-
+ 
 
